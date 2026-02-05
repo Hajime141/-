@@ -1,36 +1,43 @@
-def update_crm_auth_record(auth_method: str) -> dict:
+def check_loan_exam_status(customer_id):
     """
-    Salesforce上の顧客基本情報画面にて、本人確認方法の履歴を更新する。
-    特に口頭認証を行った場合、「【口頭認証】基本認証」チェックボックスをONにする。
+    Salesforceを参照し、顧客の年齢とローン審査ステータスを確認して、
+    マニュアルで定義された4つの遷移パターンのうちどれに該当するかを判定する。
 
     Args:
-        auth_method (str): 実施した認証方法 ('oral' または 'pin')。
-
-    Returns:
-        dict: 更新結果のステータス (例: {"result": "success", "message": "口頭認証フラグを更新しました"})
-    """
-    # 実際の更新ロジック
-    return {"result": "success", "message": "Updated auth record."}
-
-
-def check_loan_screening_status(customer_id: str) -> dict:
-    """
-    Salesforceの顧客情報照会画面から、ローン審査に関連する重要項目（年齢、事故有無、審査結果）を取得する。
-    マニュアルの分岐条件に必要な情報を包括的に返す。
-
-    Args:
-        customer_id (str): 顧客を一意に特定するID。
+        customer_id (str): 顧客ID
 
     Returns:
         dict:
-            - age_eligible (bool): 申込可能年齢（20歳以上69歳以下）であれば True。
-            - status (str): 審査ステータス ('審査中', '本確OK', '審査OK', '審査NG', '反社NG')。
-            - has_accident (bool): 事故情報の有無。
+            - status_category (str): 判定されたカテゴリ
+                'age_invalid': 申込可能年齢（20歳以上69歳以下）ではない
+                'processing_or_id_ok': 審査情報ステータスが「審査中」または「本確OK」
+                'exam_ok': 審査情報ステータスが「審査OK」
+                'exam_ng': 審査情報ステータスが「審査NG（保証会社または自社審査）」または「反社NG」
+            - age (int): 顧客の年齢（ログ用）
+            - raw_status (str): Salesforce上の生のステータス値（ログ用）
     """
-    # ここでSalesforce APIを叩き、年齢計算とステータス取得を行う
-    # 例: 70歳の場合は age_eligible=False を返す
-    return {
-        "age_eligible": True,
-        "status": "審査OK",
-        "has_accident": False
-    }
+    # 実際のシステムではCRM APIをコールして値を取得する
+    # ここでは判定ロジックの例を示す
+    
+    # 仮の取得データ
+    customer_data = get_customer_data_from_salesforce(customer_id)
+    age = customer_data['age']
+    status = customer_data['exam_status']
+    
+    # 優先順位1: 年齢チェック
+    if not (20 <= age <= 69):
+        return {"status_category": "age_invalid", "age": age, "raw_status": status}
+    
+    # 優先順位2: ステータスチェック
+    if status in ["審査中", "本確OK"]:
+        return {"status_category": "processing_or_id_ok", "age": age, "raw_status": status}
+    
+    elif status == "審査OK":
+        return {"status_category": "exam_ok", "age": age, "raw_status": status}
+    
+    elif status in ["審査NG", "社内審査NG", "反社NG"]:
+        # マニュアルの「審査NG（保証会社または自社審査）」/「反社NG」に対応
+        return {"status_category": "exam_ng", "age": age, "raw_status": status}
+    
+    # デフォルト（例外時など）
+    return {"status_category": "exam_ng", "age": age, "raw_status": "unknown"}
