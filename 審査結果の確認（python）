@@ -1,0 +1,36 @@
+def update_crm_auth_record(auth_method: str) -> dict:
+    """
+    Salesforce上の顧客基本情報画面にて、本人確認方法の履歴を更新する。
+    特に口頭認証を行った場合、「【口頭認証】基本認証」チェックボックスをONにする。
+
+    Args:
+        auth_method (str): 実施した認証方法 ('oral' または 'pin')。
+
+    Returns:
+        dict: 更新結果のステータス (例: {"result": "success", "message": "口頭認証フラグを更新しました"})
+    """
+    # 実際の更新ロジック
+    return {"result": "success", "message": "Updated auth record."}
+
+
+def check_loan_screening_status(customer_id: str) -> dict:
+    """
+    Salesforceの顧客情報照会画面から、ローン審査に関連する重要項目（年齢、事故有無、審査結果）を取得する。
+    マニュアルの分岐条件に必要な情報を包括的に返す。
+
+    Args:
+        customer_id (str): 顧客を一意に特定するID。
+
+    Returns:
+        dict:
+            - age_eligible (bool): 申込可能年齢（20歳以上69歳以下）であれば True。
+            - status (str): 審査ステータス ('審査中', '本確OK', '審査OK', '審査NG', '反社NG')。
+            - has_accident (bool): 事故情報の有無。
+    """
+    # ここでSalesforce APIを叩き、年齢計算とステータス取得を行う
+    # 例: 70歳の場合は age_eligible=False を返す
+    return {
+        "age_eligible": True,
+        "status": "審査OK",
+        "has_accident": False
+    }
