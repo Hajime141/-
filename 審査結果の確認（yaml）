@@ -1,30 +1,28 @@
-entrypoint: "step_審査結果の確認"
-
 flow_steps:
   - id: "step_審査結果の確認"
-    description: "本人確認完了を伝え、保留中にSalesforceで顧客属性と審査結果を確認する"
+    description: "本人確認完了後の挨拶を行い、保留中にSalesforceにて顧客の年齢およびローン審査結果を確認して、適切な案内フローへ振り分ける。"
     instruction:
-      - "本人確認が完了したことを伝え、調査のため保留にする旨を案内してください。"
-      - "電話機(CT-e1)を保留操作してください。"
-      - "今回の本人確認が『口頭認証』だった場合は、shared_data_poolを参照し、Salesforceの『基本認証』チェックボックスを更新するFunctionを実行してください。"
-      - "Salesforceで顧客情報を照会し、年齢・事故有無・審査ステータスを確認するFunctionを実行してください。"
-      - "Functionの結果（年齢適格性、審査ステータス）に基づいて、適切な案内へ遷移してください。"
+      - "まず、お客様に本人確認が完了した旨を伝え、受付状況確認のために保留にする。"
+      - "保留中操作: shared_data_pool.is_oral_auth（口頭認証実施フラグ）がTrueの場合、Salesforceの顧客基本情報画面にて『【口頭認証】基本認証』にチェックを入れる。"
+      - "保留中操作: Function `check_loan_exam_status` を実行し、Salesforce上の年齢および審査ステータスを取得・判定する。"
+      - "Functionの判定結果に基づき、以下の4パターンのいずれかに遷移する。"
+      - "1. 申込可能年齢外（20歳未満または70歳以上）"
+      - "2. 審査中 または 本人確認OK"
+      - "3. 審査OK"
+      - "4. 審査NG または 反社NG"
     tools:
-      - name: "update_crm_auth_record"
+      - name: "check_loan_exam_status"
         arguments:
-          auth_method: "verification_method (oral/pin)"
-      - name: "check_loan_screening_status"
-        arguments:
-          customer_id: "context_customer_id"
+          customer_id: "shared_data_pool.customer_id"
     operator:
       - "ありがとうございます。ご本人さまの確認が取れました。"
       - "それでは受付状況を確認いたしますので、少々お待ちくださいませ。"
     transitions:
       - next_step: "step_審査結果案内1"
-        condition: "function_result.age_eligible == false"
+        condition: "function_result.status_category == 'age_invalid'"
       - next_step: "step_審査結果案内2"
-        condition: "function_result.status in ['審査中', '本確OK']"
+        condition: "function_result.status_category == 'processing_or_id_ok'"
       - next_step: "step_審査結果案内3"
-        condition: "function_result.status == '審査OK'"
+        condition: "function_result.status_category == 'exam_ok'"
       - next_step: "step_審査結果案内4"
-        condition: "function_result.status in ['審査NG', '反社NG']"
+        condition: "function_result.status_category == 'exam_ng'"
