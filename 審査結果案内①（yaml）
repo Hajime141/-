@@ -1,18 +1,20 @@
-entrypoint: "step_審査結果案内1"
-
-flow_steps:
-  - id: "step_審査結果案内1"
-    description: "申込可能年齢外であるため、申し込み不可であることを案内する"
+- id: "step_審査結果案内1"
+    description: "申込可能年齢外（20歳未満または70歳以上）の顧客に対し、申し込み不可の旨を案内し、問い合わせ分類を記録してクロージングへ遷移する。"
     instruction:
-      - "顧客がカードローンの対象年齢（20歳以上69歳以下）ではないため、申し込みができない旨を伝える"
-      - "事故コードの有無を確認し、事故コードがある場合はCTI事故コード一覧表を参照する必要がある点に留意する"
+      - "カードローンの申込対象年齢が20歳以上69歳以下であることを伝える。"
+      - "顧客が対象年齢外であるため申し込めないことを丁寧に伝える。"
+      - "お客様への案内終了後、Function `register_inquiry_summary` を実行し、問い合わせ内容の大項目・小項目を記録する（発話は不要）。"
+      - "大項目: (14)手続関連/ローン・定期預金・代理人カード"
+      - "小項目: （1）カードローン申込・増額・契約内容"
     tools:
-      - name: "check_accident_code_status"
+      - name: "register_inquiry_summary"
         arguments:
-          customer_id: "shared_data_pool.customer_id"
+          major_category: "(14)手続関連/ローン・定期預金・代理人カード"
+          minor_category: "（1）カードローン申込・増額・契約内容"
+          note: "申込可能年齢外のため案内不可"
     operator:
       - "恐れ入りますが、カードローンをお申込みいただけるのは20歳以上69歳以下のお客さまとなっております。"
-      - "●●様は対象の年齢ではないため、お申込みいただけませんでした。"
+      - "{customer_name}様は対象の年齢ではないため、お申込みいただけませんでした。"
     transitions:
-      - next_step: "step_共通スクリプト6クロージング"
-        condition: "true"
+      - next_step: "step_共通スクリプト6_クロージング"
+        condition: "always"
