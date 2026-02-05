@@ -1,21 +1,16 @@
-def check_accident_code_status(customer_id: str) -> dict:
+def register_inquiry_summary(major_category, minor_category, note):
     """
-    顧客情報に紐づく事故コード（トラブル履歴等）の有無と詳細を取得する。
-    
+    問い合わせ内容の分類（大項目・小項目）と特記事項をシステムに記録する。
+    これは通話終了後の要約作成やToDo出力に使用され、顧客には通知されない。
+
     Args:
-        customer_id (str): 顧客ID
-        
+        major_category (str): 大項目（例: (14)手続関連...）
+        minor_category (str): 小項目（例: （1）カードローン申込...）
+        note (str): 内部メモ用テキスト（例: 年齢NG対応）
+    
     Returns:
-        dict: {
-            "has_accident_code": bool,  # 事故コードの有無
-            "accident_codes": list[str], # 該当する事故コードのリスト
-            "reference_document": str    # 参照すべきドキュメント（例: 'CTI事故コード一覧表'）
-        }
+        bool: 登録成功可否
     """
-    # 実際の実装ではデータベースまたはCRM(Salesforce等)へ問い合わせる
-    # ここではダミー値を返却
-    return {
-        "has_accident_code": False,
-        "accident_codes": [],
-        "reference_document": "CTI事故コード一覧表"
-    }
+    # 内部データベースやセッション情報への書き込み処理
+    # logging.info(f"Inquiry Category Registered: {major_category} - {minor_category}")
+    return True
