@@ -1,0 +1,30 @@
+entrypoint: "step_審査結果の確認"
+
+flow_steps:
+  - id: "step_審査結果の確認"
+    description: "本人確認完了を伝え、保留中にSalesforceで顧客属性と審査結果を確認する"
+    instruction:
+      - "本人確認が完了したことを伝え、調査のため保留にする旨を案内してください。"
+      - "電話機(CT-e1)を保留操作してください。"
+      - "今回の本人確認が『口頭認証』だった場合は、shared_data_poolを参照し、Salesforceの『基本認証』チェックボックスを更新するFunctionを実行してください。"
+      - "Salesforceで顧客情報を照会し、年齢・事故有無・審査ステータスを確認するFunctionを実行してください。"
+      - "Functionの結果（年齢適格性、審査ステータス）に基づいて、適切な案内へ遷移してください。"
+    tools:
+      - name: "update_crm_auth_record"
+        arguments:
+          auth_method: "verification_method (oral/pin)"
+      - name: "check_loan_screening_status"
+        arguments:
+          customer_id: "context_customer_id"
+    operator:
+      - "ありがとうございます。ご本人さまの確認が取れました。"
+      - "それでは受付状況を確認いたしますので、少々お待ちくださいませ。"
+    transitions:
+      - next_step: "step_審査結果案内1"
+        condition: "function_result.age_eligible == false"
+      - next_step: "step_審査結果案内2"
+        condition: "function_result.status in ['審査中', '本確OK']"
+      - next_step: "step_審査結果案内3"
+        condition: "function_result.status == '審査OK'"
+      - next_step: "step_審査結果案内4"
+        condition: "function_result.status in ['審査NG', '反社NG']"
