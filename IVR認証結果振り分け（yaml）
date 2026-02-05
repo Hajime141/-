@@ -1,0 +1,24 @@
+entrypoint: "step_問い合わせ内容の確認"
+
+flow_steps:
+  - id: "step_問い合わせ内容の確認"
+    description: "カードローン審査結果の問い合わせであることを確認し、現在の認証状態に応じて追加の本人確認へ誘導する"
+    instruction:
+      - "お客様がカードローン審査結果を知りたいという意図を確認してください。"
+      - "システムで状況を確認する旨を伝えてください。"
+      - "現在の認証ステータスが「IVR第1認証済」のみの場合、追加で暗証番号（PIN）による確認が必要な旨を案内してください。"
+    tools:
+      - name: "check_loan_application_status"
+        arguments:
+          inquiry_category: "examination_result"
+    operator:
+      - "カードローンサービス審査結果についてのお問い合わせですね。"
+      - "審査結果についてご案内できるかどうか、私の方でも状況を確認いたします。"
+      - "追加のご本人さま確認としてキャッシュカードの暗証番号を確認させていただきます。"
+    transitions:
+      - next_step: "step_第2PIN_PIN認証案内"
+        condition: "IVR第1認証済で、IVRでの第2認証（PIN）へ誘導する場合"
+      - next_step: "step_口頭認証単独_生年月日・住所の確認"
+        condition: "IVR第1認証済だが、IVR利用不可等の理由で口頭認証へ誘導する場合"
+      - next_step: "step_Ph2"
+        condition: "既に口頭認証が完了している場合"
