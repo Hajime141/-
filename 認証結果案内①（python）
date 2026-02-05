@@ -1,0 +1,21 @@
+def check_accident_code_status(customer_id: str) -> dict:
+    """
+    顧客情報に紐づく事故コード（トラブル履歴等）の有無と詳細を取得する。
+    
+    Args:
+        customer_id (str): 顧客ID
+        
+    Returns:
+        dict: {
+            "has_accident_code": bool,  # 事故コードの有無
+            "accident_codes": list[str], # 該当する事故コードのリスト
+            "reference_document": str    # 参照すべきドキュメント（例: 'CTI事故コード一覧表'）
+        }
+    """
+    # 実際の実装ではデータベースまたはCRM(Salesforce等)へ問い合わせる
+    # ここではダミー値を返却
+    return {
+        "has_accident_code": False,
+        "accident_codes": [],
+        "reference_document": "CTI事故コード一覧表"
+    }
