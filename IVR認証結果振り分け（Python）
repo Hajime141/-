@@ -1,0 +1,27 @@
+def determine_next_auth_step(current_auth_status, has_cash_card):
+    """
+    shared_data_poolの情報に基づき、次に進むべき認証ステップを決定する。
+    
+    Args:
+        current_auth_status (str): 現在の認証レベル ('ivr_level_1', 'oral_auth_completed' 等)
+        has_cash_card (bool): キャッシュカード有無（PIN認証可否の判断に使用）
+    
+    Returns:
+        dict:
+            - next_action (str): 推奨される遷移先アクション
+              'go_to_pin_auth': PIN認証へ誘導
+              'go_to_oral_auth': PIN不可のため口頭認証へ誘導
+              'skip_to_ph2': 既に認証十分のためPh2へ遷移
+    """
+    # ロジック例:
+    if current_auth_status == 'oral_auth_completed':
+        return {"next_action": "skip_to_ph2"}
+    
+    if current_auth_status == 'ivr_level_1':
+        if has_cash_card:
+            return {"next_action": "go_to_pin_auth"}
+        else:
+            return {"next_action": "go_to_oral_auth"}
+            
+    # デフォルト（例外処理含む）
+    return {"next_action": "skip_to_ph2"}
