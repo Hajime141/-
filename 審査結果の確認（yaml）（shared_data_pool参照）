@@ -1,29 +1,23 @@
+entrypoint: "step_審査結果の確認"
+
 flow_steps:
   - id: "step_審査結果の確認"
-    description: "本人確認完了後、保留中にshared_data_pool内の情報（年齢・審査結果）を参照し、4つのパターンのいずれかに遷移させる。"
+    description: "本人確認完了後の挨拶と、Salesforceによる属性・審査結果の確認および分岐"
     instruction:
-      - "お客様に本人確認完了を伝え、保留にする。"
-      - "保留中操作: shared_data_pool.is_oral_auth（口頭認証実施フラグ）がTrueの場合、Salesforceで『【口頭認証】基本認証』をチェックする。"
-      - "判定ロジック: shared_data_poolに格納されている『年齢』と『ローン審査結果』を参照する。"
-      - "Function `evaluate_exam_condition` にこれらの値を渡し、4つの区分のどれに該当するか判定する。"
-      - "1. 申込可能年齢外（20歳未満または70歳以上）"
-      - "2. 審査中 または 本人確認OK"
-      - "3. 審査OK"
-      - "4. 審査NG または 反社NG"
-    tools:
-      - name: "evaluate_exam_condition"
-        arguments:
-          customer_age: "shared_data_pool.customer_age"
-          exam_status: "shared_data_pool.loan_exam_result"
+      - "shared_data_pool内に r_age (年齢) および r_loan_screening_status (ローン審査結果) があるか確認"
+      - "無ければSalesforceから顧客情報を参照し、Functionを呼び出してデータを取得してください"
+      - "Salesforce画面操作: 【顧客基本情報画面】にて『【口頭認証】基本認証』にチェックを入れてください"
+      - "確認項目: 事故の有無、年齢、ローン審査結果"
+    tools: ["retrieve_salesforce_customer_info"]
     operator:
       - "ありがとうございます。ご本人さまの確認が取れました。"
       - "それでは受付状況を確認いたしますので、少々お待ちくださいませ。"
     transitions:
-      - next_step: "step_審査結果案内1"
-        condition: "function_result.condition_pattern == 'age_invalid'"
-      - next_step: "step_審査結果案内2"
-        condition: "function_result.condition_pattern == 'processing_or_id_ok'"
-      - next_step: "step_審査結果案内3"
-        condition: "function_result.condition_pattern == 'exam_ok'"
-      - next_step: "step_審査結果案内4"
-        condition: "function_result.condition_pattern == 'exam_ng'"
+      - next_step: "step_審査結果案内①"
+        condition: "r_age < 20 or r_age > 69"
+      - next_step: "step_審査結果案内②"
+        condition: "r_loan_screening_status == '審査中' or r_loan_screening_status == '本確OK'"
+      - next_step: "step_審査結果案内③"
+        condition: "r_loan_screening_status == '審査OK'"
+      - next_step: "step_審査結果案内④"
+        condition: "r_loan_screening_status == '審査NG' or r_loan_screening_status == '反社NG'"
