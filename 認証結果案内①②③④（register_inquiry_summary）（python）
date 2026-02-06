@@ -1,4 +1,4 @@
-def register_inquiry_summary(major_category, minor_category, note):
+def register_inquiry_summary(major_category: str, minor_category: str, note: str) -> bool:
     """
     問い合わせ内容の分類（大項目・小項目）と特記事項をシステムに記録する。
     これは通話終了後の要約作成やToDo出力に使用され、顧客には通知されない。
@@ -7,10 +7,10 @@ def register_inquiry_summary(major_category, minor_category, note):
         major_category (str): 大項目（例: (14)手続関連...）
         minor_category (str): 小項目（例: （1）カードローン申込...）
         note (str): 内部メモ用テキスト（例: 年齢NG対応）
-    
+     
     Returns:
         bool: 登録成功可否
     """
-    # 内部データベースやセッション情報への書き込み処理
-    # logging.info(f"Inquiry Category Registered: {major_category} - {minor_category}")
+    # 実際の実装ではDBへのINSERT処理やCRM連携を行う
+    # logging.info(f"Category: {major_category} > {minor_category}, Note: {note}")
     return True
