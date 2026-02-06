@@ -1,0 +1,34 @@
+def evaluate_exam_condition(customer_age, exam_status):
+    """
+    shared_data_poolから渡された「年齢」と「審査結果ステータス」をもとに、
+    マニュアルで定義された4つの遷移パターンのうちどれに該当するかを判定する。
+    （外部通信は行わず、純粋な条件判定のみを行う）
+
+    Args:
+        customer_age (int): 顧客の年齢（shared_data_poolより）
+        exam_status (str): ローン審査結果文字列（shared_data_poolより）
+
+    Returns:
+        dict:
+            - condition_pattern (str): 判定結果カテゴリ
+                'age_invalid': 申込可能年齢（20歳以上69歳以下）ではない
+                'processing_or_id_ok': 「審査中」または「本確OK」
+                'exam_ok': 「審査OK」
+                'exam_ng': 「審査NG」または「反社NG」
+    """
+    # 1. 年齢チェック (最優先)
+    if not (20 <= int(customer_age) <= 69):
+        return {"condition_pattern": "age_invalid"}
+    
+    # 2. ステータスによる振り分け
+    if exam_status in ["審査中", "本確OK"]:
+        return {"condition_pattern": "processing_or_id_ok"}
+    
+    elif exam_status == "審査OK":
+        return {"condition_pattern": "exam_ok"}
+    
+    elif exam_status in ["審査NG", "社内審査NG", "反社NG"]:
+        return {"condition_pattern": "exam_ng"}
+    
+    # 例外処理（該当なしの場合はNG扱いとする等の安全策）
+    return {"condition_pattern": "exam_ng"}
